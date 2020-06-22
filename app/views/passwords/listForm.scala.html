@@ -1,0 +1,174 @@
+@(currentPage: io.ebean.PagedList[Password],
+currentSortBy: String,
+currentOrder: String,
+currentFilter: String)(
+implicit request: Http.Request,
+messages: play.i18n.Messages)
+
+@****************************************
+* Helper generating navigation links    *
+****************************************@
+@link(newPage:Int, newSortBy:String) = @{
+
+var sortBy = currentSortBy
+var order = currentOrder
+
+if(newSortBy != null) {
+sortBy = newSortBy
+if(currentSortBy == newSortBy) {
+if(currentOrder == "asc") {
+order = "desc"
+} else {
+order = "asc"
+}
+} else {
+order = "asc"
+}
+}
+
+// Generate the link
+routes.PasswordController.list(newPage, sortBy, order, currentFilter)
+
+}
+
+@**********************************
+* Helper generating table headers *
+***********************************@
+@header(key:String, title:String) = {
+    <th scope="col" class="@key.replace(".","_")">
+        <a class="sort-link @if(currentSortBy != key) { sort-link-inactive }" href="@link(0, key)">@title @sortIcon(key)</a>
+    </th>
+}
+
+
+@sortIcon(key:String) = {
+    @if(currentOrder == "asc") {
+        <i class="fa fa-fw fa-caret-down"></i>
+    } else {
+        <i class="fa fa-fw fa-caret-up"></i>
+    }
+}
+
+@main {
+
+    @request.flash.asScala().get("success").map { successFlashValue =>
+        <div class="alert alert-warning" role="alert">
+            <strong>Done!</strong> @successFlashValue
+        </div>
+    }
+
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title"></h3>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <form class="form-inline" action="@link(0, "name")" method="GET">
+                                    <div class="form-group mr-sm-2 mb-2">
+                                        <label for="searchbox" class="sr-only">Filter by password name...</label>
+                                        <input type="search" class="form-control" id="searchbox" name="f" value="@currentFilter" placeholder="Filter by password name...">
+                                    </div>
+                                    <button type="submit" id="searchsubmit" class="btn btn-primary"><span class="fa fa-search"></span> Filter</button>
+                                    <a type="button" href="@routes.PasswordController.index()" class="btn btn-default"><span class="fa fa-refresh"></span> Clear</a>
+                                </form>
+                            </div>
+                            <div class="col-sm-6">
+                                <div id="example1_filter" class="dataTables_filter">
+                                    <button type="submit" id="btn_csv" class="btn btn-warning"><span class="fa fa-download"></span> Download CSV</button>
+                                    <button type="submit" id="btn_csv" class="btn btn-warning"><span class="fa fa-upload"></span> Upload CSV</button>
+                                    <button type="submit" id="btn_new" class="btn btn-success"><span class="fa fa-plus"></span> New</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if(currentPage.getTotalCount == 0) {
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <br>
+                                    <div class="well well-sm">
+                                        <em>No information found with the word <strong>"@currentFilter"</strong>.</em>
+                                    </div>
+                                </div>
+                            </div>
+
+                        } else {
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <table id="example1" class="table table-bordered table-striped dataTable" role="grid" aria-describedby="example1_info">
+                                        <thead>
+                                            <tr role="row">
+                                                <th class="sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending" style="width: 281px;">Name</th>
+                                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending" style="width: 377px;">URL</th>
+                                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending" style="width: 349px;">Username</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @for(password <- currentPage.getList.asScala) {
+                                                <tr role="row" class="odd">
+                                                    <td class="sorting_1"><a href=""></a>@password.name</td>
+                                                    <td class="sorting_1"><a href=""></a>@password.url</td>
+                                                    <td class="sorting_1"><a href=""></a>@password.username</td>
+                                                </tr>
+                                            }
+
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th rowspan="1" colspan="1">Name</th>
+                                                <th rowspan="1" colspan="1">URL</th>
+                                                <th rowspan="1" colspan="1">Username</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-5">
+                                    <div class="dataTables_info" id="example1_info" role="status" aria-live="polite"></div>
+                                </div>
+                                <div class="col-sm-7">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="example1_paginate">
+                                        <ul class="pagination">
+                                            @if(currentPage.hasPrev) {
+                                                <li class="page-item previous">
+                                                    <a class="page-link" href="@link(currentPage.getPageIndex - 1, null)">&larr; Previous</a>
+                                                </li>
+                                            } else {
+                                                <li class="page-item previous disabled">
+                                                    <a class="page-link">&larr; Previous</a>
+                                                </li>
+                                            }
+                                            <li class="page-item disabled" aria-current="page">
+                                                <a class="page-link" href="#">Displaying @currentPage.getDisplayXtoYofZ(" to "," of ")</a>
+                                            </li>
+                                            @if(currentPage.hasNext) {
+                                                <li class="page-item next">
+                                                    <a class="page-link" href="@link(currentPage.getPageIndex + 1, null)">Next &rarr;</a>
+                                                </li>
+                                            } else {
+                                                <li class="page-item next disabled">
+                                                    <a class="page-link" >Next &rarr;</a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+
+    }
+}
+
+

@@ -1,0 +1,14 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Route password above
+
+# Password list (look at the default values for pagination parameters)
+GET     /                           controllers.PasswordController.index()
+
+GET     /passwords                  controllers.PasswordController.list(request: Request, p:Int ?= 0, s ?= "name", o ?= "asc", f ?= "")
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
